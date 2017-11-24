@@ -256,7 +256,7 @@ class DefaultController extends ControllerBase {
     }
     $output = [];
     foreach ($dsids as $dsid) {
-      $output = ['value' => $dsid, 'label' => $dsid];
+      $output[] = ['value' => $dsid, 'label' => $dsid];
     }
     return new JsonResponse($output);
   }

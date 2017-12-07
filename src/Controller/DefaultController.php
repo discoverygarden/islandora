@@ -5,8 +5,9 @@ namespace Drupal\islandora\Controller;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Url;
+use Drupal\Core\Render\Renderer;
+use Drupal\Core\File\MimeType\ExtensionMimeTypeGuesser;
 
 use Drupal\islandora\Form\IslandoraSolutionPackForm;
 
@@ -27,13 +28,19 @@ use AbstractDatastream;
  */
 class DefaultController extends ControllerBase {
 
-  protected $formbuilder;
+  protected $renderer;
+
+  protected $appRoot;
+
+  protected $mimeTypeMapper;
 
   /**
    * Constructor for dependency injection.
    */
-  public function __construct(FormBuilderInterface $formbuilder) {
-    $this->formbuilder = $formbuilder;
+  public function __construct(Renderer $renderer, $appRoot, ExtensionMimeTypeGuesser $mimeTypeGuesser) {
+    $this->renderer = $renderer;
+    $this->appRoot = $appRoot;
+    $this->mimeTypeMapper = $mimeTypeGuesser;
   }
 
   /**
@@ -41,7 +48,9 @@ class DefaultController extends ControllerBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('form_builder')
+      $container->get('renderer'),
+      $container->get('app.root'),
+      $container->get('file.mime_type.mapper')
     );
   }
 
@@ -53,7 +62,7 @@ class DefaultController extends ControllerBase {
    *
    * @throws \Exception
    */
-  public function islandora_solution_packs_admin() {
+  public function islandoraSolutionPacksAdmin() {
     module_load_include('inc', 'islandora', 'includes/utilities');
     module_load_include('inc', 'islandora', 'includes/solution_packs');
 
@@ -71,7 +80,7 @@ class DefaultController extends ControllerBase {
       $objects = array_filter($solution_pack_info['objects']);
       $class_name = IslandoraSolutionPackForm::class;
 
-      $output[$solution_pack_module] = $this->formbuilder->getForm($class_name, $solution_pack_module, $solution_pack_name, $objects);
+      $output[$solution_pack_module] = $this->formBuilder()->getForm($class_name, $solution_pack_module, $solution_pack_name, $objects);
 
     }
     return $output;
@@ -83,21 +92,24 @@ class DefaultController extends ControllerBase {
    * Redirects to the view of the object indicated by the Drupal variable
    * 'islandora_repository_pid'.
    */
-  public function islandora_view_default_object() {
-    $pid = \Drupal::config('islandora.settings')->get('islandora_repository_pid');
+  public function islandoraViewDefaultObject() {
+    $pid = $this->config('islandora.settings')->get('islandora_repository_pid');
     return $this->redirect('islandora.view_object', ['object' => $pid]);
   }
 
   /**
    * Title callback for Drupal title to be the object label.
    */
-  public function islandora_drupal_title(AbstractObject $object) {
+  public function islandoraDrupalTitle(AbstractObject $object) {
     module_load_include('inc', 'islandora', 'includes/breadcrumb');
-    //drupal_set_breadcrumb(islandora_get_breadcrumbs($object));
+    // drupal_set_breadcrumb(islandora_get_breadcrumbs($object));
     return $object->label;
   }
 
-  public function islandora_object_access_callback($perm, $object, AccountInterface $account) {
+  /**
+   * Access callback for Drupal object.
+   */
+  public function islandoraObjectAccessCallback($perm, $object, AccountInterface $account) {
     module_load_include('inc', 'islandora', 'includes/utilities');
     if (!$object && !islandora_describe_repository()) {
       islandora_display_repository_inaccessible_message();
@@ -106,19 +118,22 @@ class DefaultController extends ControllerBase {
     return AccessResult::allowedIf(islandora_object_access($perm, $object, $account));
   }
 
-  public function islandora_view_object(AbstractObject $object) {
+  /**
+   * View islandora object.
+   */
+  public function islandoraViewObject(AbstractObject $object, Request $currentRequest) {
     module_load_include('inc', 'islandora', 'includes/breadcrumb');
     module_load_include('inc', 'islandora', 'includes/utilities');
     // XXX: This seems so very dumb but given how empty slugs don't play nice
     // in Drupal as defaults this needs to be the case. If it's possible to get
     // around this by making the empty slug route in YAML or a custom Routing
     // object we can remove this.
-    if (\Drupal::request()->getRequestUri() === '/islandora/object/') {
-      return $this->redirect('islandora.view_object', ['object' => \Drupal::config('islandora.settings')->get('islandora_repository_pid')]);
+    if ($currentRequest->getRequestUri() === '/islandora/object/') {
+      return $this->redirect('islandora.view_object', ['object' => $this->config('islandora.settings')->get('islandora_repository_pid')]);
     }
     // Warn if object is inactive or deleted.
     if ($object->state != 'A') {
-      drupal_set_message(t('This object is not active. Metadata may not display correctly.'), 'warning');
+      drupal_set_message($this->t('This object is not active. Metadata may not display correctly.'), 'warning');
     }
     // Optional pager parameters.
     $page_number = (empty($_GET['page'])) ? '1' : $_GET['page'];
@@ -128,7 +143,7 @@ class DefaultController extends ControllerBase {
     foreach ($hooks as $hook) {
       // @todo Remove page number and size from this hook, implementers of the
       // hook should use drupal page handling directly.
-      $temp = \Drupal::moduleHandler()->invokeAll($hook, [
+      $temp = $this->moduleHandler()->invokeAll($hook, [
         $object,
         $page_number,
         $page_size,
@@ -143,30 +158,33 @@ class DefaultController extends ControllerBase {
     }
 
     arsort($output);
-    \Drupal::moduleHandler()->alter($hooks, $object, $output);
+    $this->moduleHandler()->alter($hooks, $object, $output);
     return $output;
   }
 
   /**
    * Access callback for printing an object.
    */
-  public function islandora_print_object_access($op, $object, AccountInterface $account) {
+  public function islandoraPrintObjectAccess($op, $object, AccountInterface $account) {
     $object = islandora_object_load($object);
     return AccessResult::allowedIf(islandora_print_object_access($op, $object, $account));
   }
 
-  public static function islandora_printer_object(AbstractObject $object) {
+  /**
+   * Islandora printer object.
+   */
+  public static function islandoraPrinterObject(AbstractObject $object) {
     $output = [];
     $temp_arr = [];
 
     // Dispatch print hook.
     foreach (islandora_build_hook_list(ISLANDORA_PRINT_HOOK, $object->models) as $hook) {
-      $temp = \Drupal::moduleHandler()->invokeAll($hook, [$object]);
+      $temp = $this->moduleHandler()->invokeAll($hook, [$object]);
       if (!empty($temp)) {
         $temp_arr = array_merge_recursive($temp_arr, $temp);
       }
     }
-    $output = islandora_default_islandora_printer_object($object, \Drupal::service("renderer")->render($temp_arr));
+    $output = islandora_default_islandora_printer_object($object, $this->renderer->render($temp_arr));
     arsort($output);
 
     // Prompt to print.
@@ -174,7 +192,10 @@ class DefaultController extends ControllerBase {
     return $output;
   }
 
-  public function islandora_object_access($op, $object, $user = NULL, AccountInterface $account) {
+  /**
+   * Islandora object access.
+   */
+  public function islandoraObjectAccess($op, $object, AccountInterface $user = NULL) {
     $cache = &drupal_static(__FUNCTION__);
     if (!is_object($object)) {
       // The object could not be loaded... Presumably, we don't have
@@ -182,7 +203,7 @@ class DefaultController extends ControllerBase {
       return FALSE;
     }
     if ($user === NULL) {
-      $user = \Drupal::currentUser();
+      $user = $this->currentUser();
     }
 
     // Populate the cache on a miss.
@@ -207,21 +228,24 @@ class DefaultController extends ControllerBase {
    * the 'content' variable, or override the display by providing a theme
    * suggestion.
    *
-   * @param AbstractObject $object
+   * @param \AbstractObject $object
    *   The object.
    *
    * @return array
    *   A renderable array.
    */
-  public function islandora_print_object(AbstractObject $object) {
-   return [
-     '#title' => $object->label,
-     '#theme' => 'islandora_object_print',
-     '#object' => $object,
-   ];
+  public function islandoraPrintObject(AbstractObject $object) {
+    return [
+      '#title' => $object->label,
+      '#theme' => 'islandora_object_print',
+      '#object' => $object,
+    ];
   }
 
-  public function islandora_object_manage_access_callback($perms, $object = NULL, AccountInterface $account) {
+  /**
+   * Object management access callback.
+   */
+  public function islandoraObjectManageAccessCallback($perms, $object = NULL, AccountInterface $account = NULL) {
     module_load_include('inc', 'islandora', 'includes/utilities');
 
     if (!$object && !islandora_describe_repository()) {
@@ -231,7 +255,7 @@ class DefaultController extends ControllerBase {
 
     $has_access = FALSE;
     for ($i = 0; $i < count($perms) && !$has_access; $i++) {
-      $has_access = $has_access || islandora_object_access($perms[$i], $object);
+      $has_access = $has_access || islandora_object_access($perms[$i], $object, $account);
     }
 
     return $has_access;
@@ -242,14 +266,14 @@ class DefaultController extends ControllerBase {
    *
    * It lists the missing required (may be optional) datastreams.
    */
-  public function islandora_add_datastream_form_autocomplete_callback(AbstractObject $object, Request $request) {
+  public function islandoraAddDatastreamFormAutocompleteCallback(AbstractObject $object, Request $request) {
     module_load_include('inc', 'islandora', 'includes/content_model');
     module_load_include('inc', 'islandora', 'includes/utilities');
     $query = $request->query->get('q');
     $dsids = array_keys(islandora_get_missing_datastreams_requirements($object));
     $query = trim($query);
     if (!empty($query)) {
-      $filter = function($id) use($query) {
+      $filter = function ($id) use ($query) {
         return stripos($id, $query) !== FALSE;
       };
       $dsids = array_filter($dsids, $filter);
@@ -369,7 +393,7 @@ class DefaultController extends ControllerBase {
   /**
    * Page callback for editing a datastream.
    */
-  public function islandora_edit_datastream(AbstractDatastream $datastream) {
+  public function islandoraEditDatastream(AbstractDatastream $datastream) {
     module_load_include('inc', 'islandora', 'includes/utilities');
 
     $edit_registry = islandora_build_datastream_edit_registry($datastream);
@@ -408,7 +432,7 @@ class DefaultController extends ControllerBase {
   /**
    * Page callback for the datastream version table.
    */
-  public function islandora_datastream_version_table(AbstractDatastream $datastream) {
+  public function islandoraDatastreamVersionTable(AbstractDatastream $datastream) {
     module_load_include('inc', 'islandora', 'includes/datastream.version');
     return islandora_datastream_version_table($datastream);
   }
@@ -416,7 +440,7 @@ class DefaultController extends ControllerBase {
   /**
    * Page callback for session status messages.
    */
-  public function islandora_event_status() {
+  public function islandoraEventStatus() {
     $results = FALSE;
     if (isset($_SESSION['islandora_event_messages'])) {
       foreach ($_SESSION['islandora_event_messages'] as $message) {
@@ -432,7 +456,7 @@ class DefaultController extends ControllerBase {
   /**
    * Autocomplete the content model name.
    */
-  public function islandora_content_model_autocomplete(Request $request) {
+  public function islandoraContentModelAutocomplete(Request $request) {
     module_load_include('inc', 'islandora', 'includes/content_model.autocomplete');
     $string = $request->query->get('q');
     $content_models = islandora_get_content_model_names();
@@ -448,10 +472,9 @@ class DefaultController extends ControllerBase {
   /**
    * Autocomplete the MIME type name.
    */
-  public function islandora_mime_type_autocomplete(Request $request) {
-    require_once \Drupal::root() . "/includes/file.mimetypes.inc";
+  public function islandoraMimeTypeAutocomplete(Request $request) {
     $string = $request->query->get('q');
-    $mime_types = file_mimetype_mapping();
+    $mime_types = $this->mimeTypeMapper->getMapping();
     $output = [];
     foreach ($mime_types as $mime_type) {
       if (preg_match("/{$string}/i", $mime_type) !== 0) {

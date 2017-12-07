@@ -375,11 +375,9 @@ function islandora_viewers_form($variable_id = NULL, $mimetype = NULL, $model = 
     $viewers = array_merge_recursive($no_viewer, $viewers);
   }
   // @FIXME
-// // @FIXME
-// // The correct configuration object could not be determined. You'll need to
-// // rewrite this call manually.
-// $viewers_config = variable_get($variable_id, array());
-
+  // The correct configuration object could not be determined. You'll need to
+  // rewrite this call manually.
+  // $viewers_config = variable_get($variable_id, array());
   $form['viewers'] = [
     '#type' => 'fieldset',
     '#title' => t('Viewers'),
@@ -409,29 +407,31 @@ function islandora_viewers_form($variable_id = NULL, $mimetype = NULL, $model = 
         '#markup' => $profile['description'],
       ];
       // @FIXME
-// l() expects a Url object, created from a route name or external URI.
-// $form['viewers'][$variable_id]['configuration'][$name] = array(
-//         '#type' => 'item',
-//         '#markup' => (isset($profile['configuration']) AND $profile['configuration'] != '') ? l(t('configure'), $profile['configuration']) : '',
-//       );
-
+      // l() expects a Url object, created from a route name or external URI.
+      // @codingStandardsIgnoreStart
+      // $form['viewers'][$variable_id]['configuration'][$name] = [
+              // '#type' => 'item',
+              // '#markup' => (isset($profile['configuration']) AND $profile['configuration'] != '') ? l(t('configure'), $profile['configuration']) : '',
+              // ];
+      // @codingStandardsIgnoreEnd
     }
     $form['viewers'][$variable_id]['default'] = [
       '#type' => 'radios',
       '#options' => isset($options) ? $options : [],
+      // @codingStandardsIgnoreStart
       '#default_value' => !empty($viewers_config) ? $viewers_config['default'] : 'none',
+      // @codingStandardsIgnoreEnd
     ];
   }
   else {
     $form['viewers'][$variable_id . '_no_viewers'] = [
       '#markup' => t('No viewers detected.'),
     ];
-    // @FIXME
-// // @FIXME
-// // The correct configuration object could not be determined. You'll need to
-// // rewrite this call manually.
-// variable_del($variable_id);
 
+    // @FIXME
+    // The correct configuration object could not be determined. You'll need to
+    // rewrite this call manually.
+    // variable_del($variable_id);
   }
   return $form;
 }
@@ -482,6 +482,8 @@ function islandora_get_viewers(array $mimetype = [], $content_model = NULL) {
  */
 function theme_islandora_viewers_table($variables) {
   $form = $variables['form'];
+  // @codingStandardsIgnoreStart
+  // XXX Usage is commented out below.
   $rows = [];
   foreach ($form['name'] as $key => $element) {
     if (is_array($element) && \Drupal\Core\Render\Element::child($key)) {
@@ -493,27 +495,32 @@ function theme_islandora_viewers_table($variables) {
       $rows[] = ['data' => $row];
     }
   }
+  // @codingStandardsIgnoreEnd
+  // @codingStandardsIgnoreStart
+  // XXX Usage is commented out below.
   $header = [];
   $header[] = ['data' => t('Default')];
   $header[] = ['data' => t('Label')];
   $header[] = ['data' => t('Description')];
   $header[] = ['data' => t('Configuration')];
-
+  // @codingStandardsIgnoreEnd
   $output = '';
   // @FIXME
-// theme() has been renamed to _theme() and should NEVER be called directly.
-// Calling _theme() directly can alter the expected output and potentially
-// introduce security issues (see https://www.drupal.org/node/2195739). You
-// should use renderable arrays instead.
-//
-//
-// @see https://www.drupal.org/node/2195739
-// $output .= theme('table', array(
-//                'header' => $header,
-//                'rows' => $rows,
-//                'attributes' => array('id' => 'islandora-viewers-table'),
-//     ));
-
+  // theme() has been renamed to _theme() and should NEVER be called directly.
+  // Calling _theme() directly can alter the expected output and potentially
+  // introduce security issues (see https://www.drupal.org/node/2195739). You
+  // should use renderable arrays instead.
+  //
+  // Remove coding standard annotations above.
+  //
+  // @see https://www.drupal.org/node/2195739
+  // @codingStandardsIgnoreStart
+  // $output .= theme('table', array(
+  //                'header' => $header,
+  //                'rows' => $rows,
+  //                'attributes' => array('id' => 'islandora-viewers-table'),
+  //     ));
+  // @codingStandardsIgnoreEnd
   $output .= drupal_render_children($form);
   return $output;
 }
@@ -521,7 +528,7 @@ function theme_islandora_viewers_table($variables) {
 /**
  * Gather information and return a rendered viewer.
  *
- * @param array/string $params
+ * @param mixed $params
  *   Array or string with data the module needs in order to render a full viewer.
  * @param string $variable_id
  *   The id of the Drupal variable the viewer settings are saved in.
@@ -532,13 +539,14 @@ function theme_islandora_viewers_table($variables) {
  *   The callback to the viewer module. Returns a rendered viewer. Returns FALSE
  *   if no viewer is set.
  */
-function islandora_get_viewer($params = NULL, $variable_id = NULL, $fedora_object = NULL) {
-  // @FIXME
-// // @FIXME
-// // The correct configuration object could not be determined. You'll need to
-// // rewrite this call manually.
-// $settings = variable_get($variable_id, array());
+function islandora_get_viewer($params = NULL, $variable_id = NULL, AbstractObject $fedora_object = NULL) {
 
+  // @FIXME
+  // The correct configuration object could not be determined. You'll need to
+  // rewrite this call manually.
+  // $settings = variable_get($variable_id, array());
+  // @codingStandardsIgnoreStart
+  // XXX $settings is commented out and thus undefined.
   if (!empty($settings) and $settings['default'] !== 'none') {
     $viewer_id = islandora_get_viewer_id($variable_id);
     if ($viewer_id and $params !== NULL) {
@@ -548,6 +556,7 @@ function islandora_get_viewer($params = NULL, $variable_id = NULL, $fedora_objec
       }
     }
   }
+  // @codingStandardsIgnoreEnd
   return FALSE;
 }
 
@@ -561,15 +570,17 @@ function islandora_get_viewer($params = NULL, $variable_id = NULL, $fedora_objec
  *   The enabled viewer id. Returns FALSE if no viewer config is set.
  */
 function islandora_get_viewer_id($variable_id) {
-  // @FIXME
-// // @FIXME
-// // The correct configuration object could not be determined. You'll need to
-// // rewrite this call manually.
-// $viewers_config = variable_get($variable_id, array());
 
+  // @FIXME
+  // The correct configuration object could not be determined. You'll need to
+  // rewrite this call manually.
+  // $viewers_config = variable_get($variable_id, array());
+  // @codingStandardsIgnoreStart
+  // XXX $viewers_config is undefined, commented out above.
   if (!empty($viewers_config)) {
     return $viewers_config['default'];
   }
+  // @codingStandardsIgnoreEnd
   return FALSE;
 }
 

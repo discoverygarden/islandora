@@ -8,52 +8,54 @@
 use Drupal\islandora\DublinCore;
 use Drupal\islandora\Authentication\Provider\IslandoraTokenAuth;
 
+// @codingStandardsIgnoreStart
 // Common datastreams.
-define('ISLANDORA_DS_COMP_STREAM', 'DS-COMPOSITE-MODEL');
+const ISLANDORA_DS_COMP_STREAM = 'DS-COMPOSITE-MODEL';
 
 // Permissions.
-define('ISLANDORA_VIEW_OBJECTS', 'view fedora repository objects');
-define('ISLANDORA_METADATA_EDIT', 'edit fedora metadata');
-define('ISLANDORA_ADD_DS', 'add fedora datastreams');
-define('ISLANDORA_INGEST', 'ingest fedora objects');
+const ISLANDORA_VIEW_OBJECTS = 'view fedora repository objects';
+const ISLANDORA_METADATA_EDIT = 'edit fedora metadata';
+const ISLANDORA_ADD_DS = 'add fedora datastreams';
+const ISLANDORA_INGEST = 'ingest fedora objects';
 const ISLANDORA_PURGE = 'delete fedora objects and datastreams';
-define('ISLANDORA_MANAGE_PROPERTIES', 'manage object properties');
-define('ISLANDORA_VIEW_DATASTREAM_HISTORY', 'view old datastream versions');
-define('ISLANDORA_MANAGE_DELETED_OBJECTS', 'manage deleted objects');
-define('ISLANDORA_REVERT_DATASTREAM', 'revert to old datastream');
-define('ISLANDORA_REGENERATE_DERIVATIVES', 'regenerate derivatives for an object');
-define('ISLANDORA_REPLACE_DATASTREAM_CONTENT', 'replace a datastream with new content, preserving version history');
+const ISLANDORA_MANAGE_PROPERTIES = 'manage object properties';
+const ISLANDORA_VIEW_DATASTREAM_HISTORY = 'view old datastream versions';
+const ISLANDORA_MANAGE_DELETED_OBJECTS = 'manage deleted objects';
+const ISLANDORA_REVERT_DATASTREAM = 'revert to old datastream';
+const ISLANDORA_REGENERATE_DERIVATIVES = 'regenerate derivatives for an object';
+const ISLANDORA_REPLACE_DATASTREAM_CONTENT = 'replace a datastream with new content, preserving version history';
 
 // Hooks.
-define('ISLANDORA_VIEW_HOOK', 'islandora_view_object');
-define('ISLANDORA_PRINT_HOOK', 'islandora_view_print_object');
-define('ISLANDORA_EDIT_HOOK', 'islandora_edit_object');
-define('ISLANDORA_OVERVIEW_HOOK', 'islandora_overview_object');
-define('ISLANDORA_PRE_INGEST_HOOK', 'islandora_ingest_pre_ingest');
-define('ISLANDORA_POST_INGEST_HOOK', 'islandora_ingest_post_ingest');
-define('ISLANDORA_PRE_PURGE_OBJECT_HOOK', 'islandora_pre_purge_object');
-define('ISLANDORA_POST_PURGE_OBJECT_HOOK', 'islandora_post_purge_object');
+const ISLANDORA_VIEW_HOOK = 'islandora_view_object';
+const ISLANDORA_PRINT_HOOK = 'islandora_view_print_object';
+const ISLANDORA_EDIT_HOOK = 'islandora_edit_object';
+const ISLANDORA_OVERVIEW_HOOK = 'islandora_overview_object';
+const ISLANDORA_PRE_INGEST_HOOK = 'islandora_ingest_pre_ingest';
+const ISLANDORA_POST_INGEST_HOOK = 'islandora_ingest_post_ingest';
+const ISLANDORA_PRE_PURGE_OBJECT_HOOK = 'islandora_pre_purge_object';
+const ISLANDORA_POST_PURGE_OBJECT_HOOK = 'islandora_post_purge_object';
 const ISLANDORA_UPDATE_RELATED_OBJECTS_PROPERTIES_HOOK = 'islandora_update_related_objects_properties';
-define('ISLANDORA_METADATA_OBJECT_ALTER', 'islandora_metadata_object');
-define('ISLANDORA_METADATA_OBJECT_DESCRIPTION_ALTER', 'islandora_metadata_object_description');
-define('ISLANDORA_BREADCRUMB_FILTER_PREDICATE_HOOK', 'islandora_get_breadcrumb_query_predicates');
-define('ISLANDORA_EDIT_DATASTREAM_REGISTRY_HOOK', 'islandora_edit_datastream_registry');
+const ISLANDORA_METADATA_OBJECT_ALTER = 'islandora_metadata_object';
+const ISLANDORA_METADATA_OBJECT_DESCRIPTION_ALTER = 'islandora_metadata_object_description';
+const ISLANDORA_BREADCRUMB_FILTER_PREDICATE_HOOK = 'islandora_get_breadcrumb_query_predicates';
+const ISLANDORA_EDIT_DATASTREAM_REGISTRY_HOOK = 'islandora_edit_datastream_registry';
 
 // @todo Add Documentation.
-define('ISLANDORA_OBJECT_INGESTED_HOOK', 'islandora_object_ingested');
-define('ISLANDORA_OBJECT_MODIFIED_HOOK', 'islandora_object_modified');
-define('ISLANDORA_OBJECT_PURGED_HOOK', 'islandora_object_purged');
-define('ISLANDORA_DATASTREAM_INGESTED_HOOK', 'islandora_datastream_ingested');
-define('ISLANDORA_DATASTREAM_MODIFIED_HOOK', 'islandora_datastream_modified');
-define('ISLANDORA_DATASTREAM_PURGED_HOOK', 'islandora_datastream_purged');
-define('ISLANDORA_INGEST_STEP_HOOK', 'islandora_ingest_steps');
-define('ISLANDORA_DERIVATIVE_CREATION_HOOK', 'islandora_derivative');
+const ISLANDORA_OBJECT_INGESTED_HOOK = 'islandora_object_ingested';
+const ISLANDORA_OBJECT_MODIFIED_HOOK = 'islandora_object_modified';
+const ISLANDORA_OBJECT_PURGED_HOOK = 'islandora_object_purged';
+const ISLANDORA_DATASTREAM_INGESTED_HOOK = 'islandora_datastream_ingested';
+const ISLANDORA_DATASTREAM_MODIFIED_HOOK = 'islandora_datastream_modified';
+const ISLANDORA_DATASTREAM_PURGED_HOOK = 'islandora_datastream_purged';
+const ISLANDORA_INGEST_STEP_HOOK = 'islandora_ingest_steps';
+const ISLANDORA_DERIVATIVE_CREATION_HOOK = 'islandora_derivative';
 
 // Autocomplete paths.
-define('ISLANDORA_CONTENT_MODELS_AUTOCOMPLETE', 'islandora/autocomplete/content-models');
-define('ISLANDORA_MIME_TYPES_AUTOCOMPLETE', 'islandora/autocomplete/mime-types');
+const ISLANDORA_CONTENT_MODELS_AUTOCOMPLETE = 'islandora/autocomplete/content-models';
+const ISLANDORA_MIME_TYPES_AUTOCOMPLETE = 'islandora/autocomplete/mime-types';
 
 const ISLANDORA_BREADCRUMB_LEGACY_BACKEND = 'islandora_breadcrumbs_legacy_sparql';
+// @codingStandardsIgnoreEnd
 
 /**
  * Implements hook_theme().
@@ -394,7 +396,7 @@ function islandora_default_islandora_printer_object(AbstractObject $object, $alt
 
   try {
     $dc = $islandora_object['DC']->content;
-    $dc_object = DublinCore::importFromXMLString($dc);
+    $dc_object = DublinCore::importFromXmlString($dc);
   }
   catch (Exception $e) {
     drupal_set_message(t('Error retrieving object %s %t', ['%s' => $islandora_object->id, '%t' => $e->getMessage()]), 'error', FALSE);

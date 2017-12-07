@@ -16,20 +16,13 @@ class IslandoraObjectAccess implements AccessInterface {
    *
    * @var \Drupal\Core\Config\ConfigFactoryInterface
    */
-  protected $config;
+  protected $configFactory;
 
   /**
    * Constructor.
    */
-  public function __construct(ConfigFactoryInterface $config) {
-    $this->config = $config;
-  }
-
-  /**
-   * Dependency injection interface.
-   */
-  public static function create(ConfigFactoryInterface $config) {
-    return new static($config);
+  public function __construct(ConfigFactoryInterface $configFactory) {
+    $this->configFactory = $configFactory;
   }
 
   /**
@@ -57,7 +50,7 @@ class IslandoraObjectAccess implements AccessInterface {
     // around this by making the empty slug route in YAML or a custom Routing
     // object we can remove this.
     $object = islandora_object_load($object === 'root' ?
-      $this->config->get('islandora.settings')->get('islandora_repository_pid') :
+      $this->configFactory->get('islandora.settings')->get('islandora_repository_pid') :
       $object);
     if (!$object && !islandora_describe_repository()) {
       islandora_display_repository_inaccessible_message();

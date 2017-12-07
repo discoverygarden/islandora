@@ -484,7 +484,7 @@ function islandora_get_datastreams_requirements_from_content_model(AbstractObjec
  * @return NewFedoraObject
  *   An ingestable NewFedoraObject.
  */
-function islandora_prepare_new_object($name_source = NULL, $label = NULL, $datastreams = [], $content_models = [], $relationships = []) {
+function islandora_prepare_new_object($name_source = NULL, $label = NULL, array $datastreams = [], array $content_models = [], array $relationships = []) {
   $user = \Drupal::currentUser();
   $tuque = islandora_get_tuque_connection();
   $object = isset($name_source) ? $tuque->repository->constructObject($name_source) : new IslandoraNewFedoraObject(NULL, $tuque->repository);
@@ -530,9 +530,11 @@ function islandora_prepare_new_object($name_source = NULL, $label = NULL, $datas
         // set datastream_file by url for the given scheme. Https (SSL) can
         // cause this to fail, and trigger an output log in watchdog.
         // @FIXME
-// url() expects a route name or an external URI.
-// $datastream_file = url($ds['datastream_file'], array('absolute' => TRUE));
-        \Drupal::logger('islandora')->warning('Attempting to ingest %file in islandora_prepare_new_object(), but it does not appear to be readable. We will pass the path through url(), and pass along as such.', array('%file' => $datastream_file));
+        // url() expects a route name or an external URI.
+        // @codingStandardsIgnoreStart
+        // $datastream_file = url($ds['datastream_file'], array('absolute' => TRUE));
+        // @codingStandardsIgnoreEnd
+        \Drupal::logger('islandora')->warning('Attempting to ingest %file in islandora_prepare_new_object(), but it does not appear to be readable. We will pass the path through url(), and pass along as such.', ['%file' => $datastream_file]);
       }
     }
 
@@ -597,7 +599,7 @@ function islandora_executable_available_message($path, $version = NULL, $require
   if ($available) {
     $image = [
       '#theme' => 'image',
-      '#uri' =>'/core/misc/icons/73b355/check.svg' ,
+      '#uri' => '/core/misc/icons/73b355/check.svg' ,
     ];
     $message = t('Executable found at @path', ['@path' => $path]);
     if ($version) {
@@ -607,7 +609,7 @@ function islandora_executable_available_message($path, $version = NULL, $require
       if (version_compare($version, $required_version) < 0) {
         $image = [
           '#theme' => 'image',
-          '#uri' =>'/core/misc/icons/e32700/error.svg' ,
+          '#uri' => '/core/misc/icons/e32700/error.svg' ,
         ];
       }
       $message .= t('<br/>Required Version: @version', ['@version' => $required_version]);
@@ -616,7 +618,7 @@ function islandora_executable_available_message($path, $version = NULL, $require
   else {
     $image = [
       '#theme' => 'image',
-      '#uri' =>'/core/misc/icons/e32700/error.svg' ,
+      '#uri' => '/core/misc/icons/e32700/error.svg' ,
     ];
     $message = t('Unable to locate executable at @path', ['@path' => $path]);
   }
@@ -637,14 +639,14 @@ function islandora_directory_exists_message($path) {
   if ($available) {
     $image = [
       '#theme' => 'image',
-      '#uri' =>'/core/misc/icons/73b355/check.svg' ,
+      '#uri' => '/core/misc/icons/73b355/check.svg' ,
     ];
     $message = t('Directory found at @path', ['@path' => $path]);
   }
   else {
     $image = [
       '#theme' => 'image',
-      '#uri' =>'/core/misc/icons/e32700/error.svg' ,
+      '#uri' => '/core/misc/icons/e32700/error.svg' ,
     ];
     $message = t('Unable to locate directory at @path', ['@path' => $path]);
   }
@@ -766,11 +768,13 @@ function islandora_content_model_select_table_form_element($drupal_variable, arr
   }
 
   // @FIXME
-// // @FIXME
-// // The correct configuration object could not be determined. You'll need to
-// // rewrite this call manually.
-// $selected = array_values(variable_get($drupal_variable, $default_values_array));
-
+  // @FIXME
+  // The correct configuration object could not be determined. You'll need to
+  // rewrite this call manually.
+  // @codingStandardsIgnoreStart
+  // XXX Commenting out the line below is throwing errors in the code block because $selected
+  // is undefined.
+  // $selected = array_values(variable_get($drupal_variable, $default_values_array));
   $comparator = function ($a, $b) use ($selected) {
     $a_val = $b_val = 0;
     if (in_array($a, $selected)) {
@@ -789,6 +793,7 @@ function islandora_content_model_select_table_form_element($drupal_variable, arr
     ];
     $defaults[$pid] = in_array($pid, $selected);
   }
+  // @codingStandardsIgnoreEnd
   $header = [
     'pid' => ['data' => t('PID')],
     'title' => ['data' => t('Content Model')],

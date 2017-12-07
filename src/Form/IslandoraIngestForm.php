@@ -58,7 +58,7 @@ class IslandoraIngestForm extends FormBase {
       drupal_set_message($e->getMessage(), 'error');
       return [
         [
-          '#markup' => \Drupal::l($this->t('Back'), Url::fromUri('javascript:window.history.back();')),
+          '#markup' => $this->getLinkGenerator()->generate($this->t('Back'), Url::fromUri('javascript:window.history.back();')),
         ],
       ];
     }

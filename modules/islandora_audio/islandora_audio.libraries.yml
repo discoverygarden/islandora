@@ -1,0 +1,7 @@
+audio:
+  version: 1.x
+  js:
+    js/audio.js: {preprocess: false}
+  dependencies:
+    - core/drupal
+    - core/drupalSettings

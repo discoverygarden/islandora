@@ -30,3 +30,18 @@ function islandora_audio_help($route_name, RouteMatchInterface $route_match) {
     default:
   }
 }
+
+/**
+ * Implements hook_theme().
+ */
+function islandora_audio_theme() {
+  return [
+    'islandora_file_audio' => [
+      'variables' => [
+        'files' => [],
+        'tracks' => NULL,
+        'attributes' => NULL,
+      ],
+    ],
+  ];
+}

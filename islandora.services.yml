@@ -59,3 +59,8 @@ services:
   islandora.gemini.lookup:
     class: Drupal\islandora\GeminiLookup
     arguments: ['@islandora.gemini.client', '@jwt.authentication.jwt', '@islandora.media_source_service', '@http_client', '@logger.channel.islandora']
+  islandora.stomp.auth_header_listener:
+    class: Drupal\islandora\EventSubscriber\StompHeaderEventSubscriber
+    arguments: ['@jwt.authentication.jwt']
+    tags:
+      - { name: event_subscriber }
